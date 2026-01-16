@@ -26,10 +26,6 @@ data = pd.read_excel(file_path, sheet_name=sheet_name)
 # Display the first few rows of the fetched data
 print(data.head())
 
-"""# Data Preprocessing
-
-"""
-
 # Drop unused columns safely
 data = data.drop(
     ['Customer_ID', 'Churn_Category', 'Churn_Reason'],
@@ -55,93 +51,48 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-"""# Train Random Forest Model"""
-
 # Initialize the Random Forest Classifier
 rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
 
-
-
 # Train the model
-
 rf_model.fit(X_train, y_train)
-
-#Evaluate Model
-
-# Make predictions
-
 y_pred = rf_model.predict(X_test)
 
 
-
 # Evaluate the model
-
 print("Confusion Matrix:")
-
 print(confusion_matrix(y_test, y_pred))
-
 print("\nClassification Report:")
-
 print(classification_report(y_test, y_pred))
-
-
 
 # Feature Selection using Feature Importance
 
 importances = rf_model.feature_importances_
-
 indices = np.argsort(importances)[::-1]
 
-
-
 # Plot the feature importances
-
 plt.figure(figsize=(15, 6))
-
 sns.barplot(x=importances[indices], y=X.columns[indices])
-
 plt.title('Feature Importances')
-
 plt.xlabel('Relative Importance')
-
 plt.ylabel('Feature Names')
-
 plt.show()
 
-# Define the path to the Joiner Data Excel file
 file_path = r"/content/predictive data.xlsx"
 
-
-# Define the sheet name to read data from
 sheet_name = 'vw_JoinData'
-
-
-# Read the data from the specified sheet into a pandas DataFrame
 new_data = pd.read_excel(file_path, sheet_name=sheet_name)
 
-
-# Display the first few rows of the fetched data
 print(new_data.head())
 
-
-# Retain the original DataFrame to preserve unencoded columns
 original_data = new_data.copy()
 
-
-# Retain the Customer_ID column
 customer_ids = new_data['Customer_ID']
 
-
-# Drop columns that won't be used for prediction in the encoded DataFrame
-# This also removes 'Customer_Status', 'Churn_Category', 'Churn_Reason' as they are not features for prediction
 new_data = new_data.drop(['Customer_ID', 'Customer_Status', 'Churn_Category', 'Churn_Reason'], axis=1, errors='ignore')
 
-
-# Apply one-hot encoding to new_data, similar to how X was processed for training
 new_data_encoded = pd.get_dummies(new_data, drop_first=True)
 
-# Align columns of new_data_encoded with the training data (X)
-# Get all columns from the training features X
 training_columns = X.columns
 
 # Add missing columns to new_data_encoded and fill with zeros
@@ -152,22 +103,12 @@ for c in missing_cols:
 # Drop columns from new_data_encoded that are not in training_columns
 extra_cols = set(new_data_encoded.columns) - set(training_columns)
 new_data_encoded = new_data_encoded.drop(columns=list(extra_cols))
-
-# Ensure the order of columns matches the training data
 new_data_aligned = new_data_encoded[training_columns]
 
-
-# Make predictions
 new_predictions = rf_model.predict(new_data_aligned)
-
-
-# Add predictions to the original DataFrame
 original_data['Customer_Status_Predicted'] = new_predictions
-
 
 # Filter the DataFrame to include only records predicted as "Churned"
 original_data = original_data[original_data['Customer_Status_Predicted'] == 1]
 
-
-# Save the results
-original_data.to_csv(r"C:\yourpath\Predictions.csv", index=False)
+original_data.to_csv(r"C:\Desktop\Predictions.csv", index=False)
